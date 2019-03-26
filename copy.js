@@ -7,6 +7,7 @@ const originalCsv = path.join('data', '100_lines.csv');
 function copy(original, copy, encoding) {
   const readStream = fs.createReadStream(original, encoding);
   const writeStream = fs.createWriteStream(copy);
+  if (encoding) writeStream.setDefaultEncoding(encoding);
 
   try {
     fs.unlinkSync(copy);
@@ -14,13 +15,12 @@ function copy(original, copy, encoding) {
     console.log(`pas de fichier ${copy} à supprimer.`, unlinkError);
   }
 
-  readStream.on('data', chunk => {
-    console.log('chunk lu : ', chunk);
-    let isWriteOK = writeStream.write(chunk, encoding);
-    console.log('isWriteOK? ', isWriteOK);
-  });
+  readStream.pipe(writeStream);
   readStream.on('close', () => {
     console.log(`lecture de ${original} terminée`);
+  });
+  writeStream.on('error', (err) => {
+    console.log(`erreur lors de l'écriture dans ${copy}.`, err);
   });
 }
 
