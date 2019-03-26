@@ -1,22 +1,26 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
 
 const originalMap = path.join('data', 'map.pdf');
 const originalCsv = path.join('data', '100_lines.csv');
 
 function copy(original, copy, encoding) {
-  fs.unlink(copy)
-  .catch(() => Promise.resolve())
-  .then(() => fs.readFile(original, encoding))
-  .then((data) => {
-    console.log(data);
-    return fs.writeFile(copy, data);
-  })
-  .then(() => {
-    console.log('fichier copié!');
-  })
-  .catch((err) => {
-    console.log('une erreur est survenue: ', err);
+  const readStream = fs.createReadStream(original, encoding);
+  const writeStream = fs.createWriteStream(copy);
+
+  try {
+    fs.unlinkSync(copy);
+  } catch (unlinkError) {
+    console.log(`pas de fichier ${copy} à supprimer.`, unlinkError);
+  }
+
+  readStream.on('data', chunk => {
+    console.log('chunk lu : ', chunk);
+    let isWriteOK = writeStream.write(chunk, encoding);
+    console.log('isWriteOK? ', isWriteOK);
+  });
+  readStream.on('close', () => {
+    console.log(`lecture de ${original} terminée`);
   });
 }
 
