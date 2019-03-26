@@ -2,14 +2,15 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const originalMap = path.join('data', 'map.pdf');
-const mapCopy = 'map-copy.pdf';
+const originalCsv = path.join('data', '100_lines.csv');
 
-fs.unlink(mapCopy)
+function copy(original, copy, encoding) {
+  fs.unlink(copy)
   .catch(() => Promise.resolve())
-  .then(() => fs.readFile(originalMap))
+  .then(() => fs.readFile(original, encoding))
   .then((data) => {
     console.log(data);
-    return fs.writeFile(mapCopy, data);
+    return fs.writeFile(copy, data);
   })
   .then(() => {
     console.log('fichier copié!');
@@ -17,3 +18,7 @@ fs.unlink(mapCopy)
   .catch((err) => {
     console.log('une erreur est survenue: ', err);
   });
+}
+
+copy(originalMap, 'map-copy.pdf');
+copy(originalCsv, '100_lines-copy.csv', 'utf8');
