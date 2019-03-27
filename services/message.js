@@ -1,5 +1,9 @@
 const fs = require('fs');
 
+function isMessageInvalid(message) {
+    return !message.author || !message.quote;
+}
+
 module.exports = class MessageService {
     constructor() {
         fs.promises.readFile('./data/quotes.json')
@@ -17,7 +21,7 @@ module.exports = class MessageService {
     }
 
     createMessage(message) {
-        if (!message.author || !message.quote) {
+        if (isMessageInvalid(message)) {
             throw 'Message_parameter_exception';
         }
         const ids = this.quotes.map(quote => parseInt(quote.id, 10));
@@ -28,5 +32,13 @@ module.exports = class MessageService {
         };
         this.quotes.push(newMessage);
         return newMessage;
+    }
+
+    updateMessage(message) {
+        if (isMessageInvalid(message)) {
+            throw 'Message_parameter_exception';
+        }
+        const indexToChange = this.quotes.findIndex(quote => quote.id === message.id);
+        this.quotes[indexToChange] = message;
     }
 }

@@ -32,6 +32,20 @@ v1.post('/message', (request, response) => {
     }
 });
 
+v1.put('/message/:id', (request, response) => {
+    const id = parseInt(request.params.id, 10);
+    const message = {
+        ...request.body,
+        id
+    };
+    try {
+        messageService.updateMessage(message);
+        response.sendStatus(200);
+    } catch (error) {
+        response.sendStatus(400).end(error);
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');
 });
