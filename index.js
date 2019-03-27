@@ -13,6 +13,13 @@ v1.get('/message', (request, response) => {
     );
 });
 
+v1.get('/message/:id', (request, response) => {
+    const id = parseInt(request.params.id, 10);
+    response.send(
+        messageService.getMessage(id)
+    );
+});
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');
 });
