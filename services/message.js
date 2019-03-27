@@ -15,4 +15,18 @@ module.exports = class MessageService {
     getMessage(id) {
         return this.quotes.find(quote => quote.id === id);
     }
+
+    createMessage(message) {
+        if (!message.author || !message.quote) {
+            throw 'Message_parameter_exception';
+        }
+        const ids = this.quotes.map(quote => parseInt(quote.id, 10));
+        const nextId = Math.max(...ids) + 1;
+        const newMessage = {
+            ...message,
+            id: nextId
+        };
+        this.quotes.push(newMessage);
+        return newMessage;
+    }
 }
