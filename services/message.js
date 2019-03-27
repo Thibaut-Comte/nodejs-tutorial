@@ -41,4 +41,12 @@ module.exports = class MessageService {
         const indexToChange = this.quotes.findIndex(quote => quote.id === message.id);
         this.quotes[indexToChange] = message;
     }
+
+    deleteMessage(id) {
+        const indexToChange = this.quotes.findIndex(quote => quote.id === id);
+        if (indexToChange < 0) {
+            throw 'Message_not_found_exception';
+        }
+        this.quotes.splice(indexToChange, 1);
+    }
 }

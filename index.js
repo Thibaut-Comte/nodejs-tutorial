@@ -46,6 +46,16 @@ v1.put('/message/:id', (request, response) => {
     }
 });
 
+v1.delete('/message/:id', (request, response) => {
+    const id = parseInt(request.params.id, 10);
+    try {
+        messageService.deleteMessage(id);
+        response.sendStatus(200);
+    } catch (error) {
+        response.sendStatus(404).end(error);
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');
 });
