@@ -6,6 +6,8 @@ const v1 = express.Router();
 const MessageService = require('./services/message');
 const messageService = new MessageService();
 
+const { basicAuth } = require('./middleware/basic-auth');
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
@@ -23,7 +25,7 @@ v1.get('/message/:id', (request, response) => {
     );
 });
 
-v1.post('/message', (request, response) => {
+v1.post('/message', basicAuth, (request, response) => {
     const message = request.body;
     try {
         response.send(messageService.createMessage(message));
@@ -32,7 +34,7 @@ v1.post('/message', (request, response) => {
     }
 });
 
-v1.put('/message/:id', (request, response) => {
+v1.put('/message/:id', basicAuth, (request, response) => {
     const id = parseInt(request.params.id, 10);
     const message = {
         ...request.body,
@@ -46,7 +48,7 @@ v1.put('/message/:id', (request, response) => {
     }
 });
 
-v1.delete('/message/:id', (request, response) => {
+v1.delete('/message/:id', basicAuth, (request, response) => {
     const id = parseInt(request.params.id, 10);
     try {
         messageService.deleteMessage(id);
