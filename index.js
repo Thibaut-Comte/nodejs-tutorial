@@ -66,6 +66,10 @@ v1.post('/file', upload.single('file'), (request, response) => {
     response.sendStatus(200);
 });
 
+v1.get('/file', (request, response) => {
+    response.download(__dirname + '/data/quotes.json');
+});
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');
 });
