@@ -1,7 +1,10 @@
 const express = require('express');
 var bodyParser = require("body-parser");
+const multer = require('multer');
 const app = express();
 const v1 = express.Router();
+
+const upload = multer({ dest: 'data/upload/' })
 
 const MessageService = require('./services/message');
 const messageService = new MessageService();
@@ -56,6 +59,11 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
     } catch (error) {
         response.sendStatus(404).end(error);
     }
+});
+
+v1.post('/file', upload.single('file'), (request, response) => {
+    console.log(request.file);
+    response.sendStatus(200);
 });
 
 app.listen(3000, () => {
