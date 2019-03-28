@@ -9,6 +9,9 @@ const upload = multer({ dest: 'data/upload/' })
 const MessageService = require('./services/message');
 const messageService = new MessageService();
 
+const FileService = require('./services/file');
+const fileService = new FileService();
+
 const { basicAuth } = require('./middleware/basic-auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -63,7 +66,14 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
 
 v1.post('/file', upload.single('file'), (request, response) => {
     console.log(request.file);
-    response.sendStatus(200);
+    fileService.addFileInfo(request.file)
+        .then(res => {
+            response.sendStatus(200);
+        })
+        .catch(error => {
+            console.log('error: ', error);
+            response.sendStatus(400).end(error);
+        });
 });
 
 app.listen(3000, () => {
