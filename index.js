@@ -65,10 +65,20 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
 });
 
 v1.post('/file', upload.single('file'), (request, response) => {
-    console.log(request.file);
     fileService.addFileInfo(request.file)
         .then(res => {
             response.sendStatus(200);
+        })
+        .catch(error => {
+            console.log('error: ', error);
+            response.sendStatus(400).end(error);
+        });
+});
+
+v1.get('/file', (request, response) => {
+    fileService.getFileInfos()
+        .then(res => {
+            response.send(res);
         })
         .catch(error => {
             console.log('error: ', error);

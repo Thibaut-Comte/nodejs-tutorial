@@ -15,14 +15,25 @@ module.exports = class FileService {
   addFileInfo(fileInfo) {
     const client = this.getClient();
     return client.connect()
-    .then(() => {
-      console.log('connected');
-      return client.query(
+    .then(() =>
+      client.query(
         'INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding) VALUES($1, $2, $3, $4, $5);',
         [fileInfo.filename, fileInfo.mimetype, fileInfo.originalname, fileInfo.size, fileInfo.encoding]
-      );
-    }).then(res => {
+      )
+    ).then(res => client.end());
+  }
+
+  getFileInfos() {
+    const client = this.getClient();
+    let result;
+    return client.connect()
+    .then(() =>
+      client.query(
+        'SELECT id, "file-name", "mime-type", "original-name", size, encoding FROM filestore;'
+      )
+    ).then(({ rows }) => {
+      result = rows;
       return client.end();
-    });
+    }).then(() => result);
   }
 }
