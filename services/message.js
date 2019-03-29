@@ -1,4 +1,5 @@
 const fs = require('fs');
+const MongoClient = require('mongodb').MongoClient;
 
 function isMessageInvalid(message) {
     return !message.author || !message.quote;
@@ -6,9 +7,28 @@ function isMessageInvalid(message) {
 
 module.exports = class MessageService {
     constructor() {
+
+        const user = encodeURIComponent('heroku_xc906x0g');
+        const password = encodeURIComponent("=B'rLG'YTps3li=a:jjn");
+
+        this.connectionUrl = `mongodb://${user}:${password}@ds127535.mlab.com:27535/${user}`;
+        this.dbName = 'heroku_xc906x0g';
+    
         fs.promises.readFile('./data/quotes.json')
         .then(quotes => {
             this.quotes = JSON.parse(quotes);
+        });
+
+        const client = new MongoClient(this.connectionUrl);
+        client.connect((err) => {
+            if (err) {
+                console.log('error: ', err);
+                throw err;
+            }
+            
+            console.log('Connected successfully to server');
+            const db = client.db(this.dbName);
+            client.close();
         });
     }
 
