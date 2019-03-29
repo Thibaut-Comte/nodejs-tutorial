@@ -55,7 +55,7 @@ v1.put('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     const message = request.body;
     messageService.updateMessage(message, id)
-    .then((result) => {
+    .then(() => {
         response.sendStatus(200);
     })
     .catch(error => {
@@ -65,13 +65,15 @@ v1.put('/message/:id', basicAuth, (request, response) => {
 });
 
 v1.delete('/message/:id', basicAuth, (request, response) => {
-    const id = parseInt(request.params.id, 10);
-    try {
-        messageService.deleteMessage(id);
+    const id = request.params.id;
+    messageService.deleteMessage(id)
+    .then(() => {
         response.sendStatus(200);
-    } catch (error) {
-        response.sendStatus(404).end(error);
-    }
+    })
+    .catch(error => {
+        console.log('error: ', error);
+        response.sendStatus(400).end(error);
+    });
 });
 
 v1.post('/file', upload.single('file'), (request, response) => {

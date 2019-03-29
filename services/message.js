@@ -1,4 +1,3 @@
-const fs = require('fs');
 const { MongoClient, ObjectID } = require('mongodb');
 
 function isMessageInvalid(message) {
@@ -17,11 +16,8 @@ function getDbClient() {
 
 module.exports = class MessageService {
     constructor() {
-        fs.promises.readFile('./data/quotes.json')
-        .then(quotes => {
-            this.quotes = JSON.parse(quotes);
-            return getDbClient();
-        }).then(client => {
+        getDbClient()
+        .then(client => {
             this.client = client;
             this.db = client.db(dbName);
         });
@@ -57,10 +53,6 @@ module.exports = class MessageService {
     }
 
     deleteMessage(id) {
-        const indexToChange = this.quotes.findIndex(quote => quote.id === id);
-        if (indexToChange < 0) {
-            throw 'Message_not_found_exception';
-        }
-        this.quotes.splice(indexToChange, 1);
+        return this.db.collection('messages').deleteOne({ '_id': new ObjectID(id) });
     }
 }
