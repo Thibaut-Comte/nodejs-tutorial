@@ -36,4 +36,19 @@ module.exports = class FileService {
       return client.end();
     }).then(() => result);
   }
+
+  getFileInfo(id) {
+    const client = this.getClient();
+    let result;
+    return client.connect()
+    .then(() =>
+      client.query(
+        'SELECT id, "file-name", "mime-type", "original-name", size, encoding FROM filestore WHERE id = $1;',
+        [id]
+      )
+    ).then(({ rows }) => {
+      result = rows.length >0 ? rows[0] :null ;
+      return client.end();
+    }).then(() => result);
+  }
 }

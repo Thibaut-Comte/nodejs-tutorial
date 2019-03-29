@@ -1,6 +1,8 @@
 const express = require('express');
 var bodyParser = require("body-parser");
 const multer = require('multer');
+const fs = require('fs');
+
 const app = express();
 const v1 = express.Router();
 
@@ -79,6 +81,24 @@ v1.get('/file', (request, response) => {
     fileService.getFileInfos()
         .then(res => {
             response.send(res);
+        })
+        .catch(error => {
+            console.log('error: ', error);
+            response.sendStatus(400).end(error);
+        });
+});
+
+v1.get('/file/:id', (request, response) => {
+    const id = parseInt(request.params.id, 10);
+    fileService.getFileInfo(id)
+        .then(fileInfo => {
+            if (!fileInfo) return response.sendStatus(404);
+            const file = __dirname + '/data/upload/' + fileInfo['file-name'];
+            response.setHeader('Content-disposition', 'attachment; filename=' + fileInfo['original-name']);
+            response.setHeader('Content-type', fileInfo['mime-type']);
+            response.setHeader('Content-Length', fileInfo.size);
+            
+            fs.createReadStream(file).pipe(response);
         })
         .catch(error => {
             console.log('error: ', error);
