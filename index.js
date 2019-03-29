@@ -41,11 +41,14 @@ v1.get('/message/:id', (request, response) => {
 
 v1.post('/message', basicAuth, (request, response) => {
     const message = request.body;
-    try {
-        response.send(messageService.createMessage(message));
-    } catch (error) {
+    messageService.createMessage(message)
+    .then((result) => {
+        response.sendStatus(201);
+    })
+    .catch(error => {
+        console.log('error: ', error);
         response.sendStatus(400).end(error);
-    }
+    });
 });
 
 v1.put('/message/:id', basicAuth, (request, response) => {

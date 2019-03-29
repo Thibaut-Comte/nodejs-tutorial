@@ -5,8 +5,8 @@ function isMessageInvalid(message) {
     return !message.author || !message.quote;
 }
 
-const user = 'admin123'; //encodeURIComponent('heroku_xc906x0g');
-const password = 'password2'; //encodeURIComponent("=B'rLG'YTps3li=a:jjn");
+const user = 'admin123';
+const password = 'password2';
 
 const dbName = 'heroku_xc906x0g';
 const connectionUrl = `mongodb://${user}:${password}@ds127535.mlab.com:27535/${dbName}`;
@@ -39,14 +39,7 @@ module.exports = class MessageService {
         if (isMessageInvalid(message)) {
             throw 'Message_parameter_exception';
         }
-        const ids = this.quotes.map(quote => parseInt(quote.id, 10));
-        const nextId = Math.max(...ids) + 1;
-        const newMessage = {
-            ...message,
-            id: nextId
-        };
-        this.quotes.push(newMessage);
-        return newMessage;
+        return this.db.collection('messages').insertOne(message);
     }
 
     updateMessage(message) {
