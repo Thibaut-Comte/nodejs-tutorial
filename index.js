@@ -52,17 +52,16 @@ v1.post('/message', basicAuth, (request, response) => {
 });
 
 v1.put('/message/:id', basicAuth, (request, response) => {
-    const id = parseInt(request.params.id, 10);
-    const message = {
-        ...request.body,
-        id
-    };
-    try {
-        messageService.updateMessage(message);
+    const id = request.params.id;
+    const message = request.body;
+    messageService.updateMessage(message, id)
+    .then((result) => {
         response.sendStatus(200);
-    } catch (error) {
+    })
+    .catch(error => {
+        console.log('error: ', error);
         response.sendStatus(400).end(error);
-    }
+    });
 });
 
 v1.delete('/message/:id', basicAuth, (request, response) => {

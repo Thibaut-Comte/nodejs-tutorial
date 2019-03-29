@@ -42,12 +42,18 @@ module.exports = class MessageService {
         return this.db.collection('messages').insertOne(message);
     }
 
-    updateMessage(message) {
+    updateMessage(message, id) {
         if (isMessageInvalid(message)) {
             throw 'Message_parameter_exception';
         }
-        const indexToChange = this.quotes.findIndex(quote => quote.id === message.id);
-        this.quotes[indexToChange] = message;
+        return this.db.collection('messages').updateOne(
+            { '_id': new ObjectID(id) },
+            {
+                $set: {
+                    ...message
+                }
+            }
+        );
     }
 
     deleteMessage(id) {
