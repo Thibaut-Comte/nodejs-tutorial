@@ -1,5 +1,5 @@
 const fs = require('fs');
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectID } = require('mongodb');
 
 function isMessageInvalid(message) {
     return !message.author || !message.quote;
@@ -32,7 +32,7 @@ module.exports = class MessageService {
     }
 
     getMessage(id) {
-        return this.quotes.find(quote => quote.id === id);
+        return this.db.collection('messages').findOne({ '_id': new ObjectID(id) });
     }
 
     createMessage(message) {

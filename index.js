@@ -27,10 +27,16 @@ v1.get('/message', (request, response) => {
 });
 
 v1.get('/message/:id', (request, response) => {
-    const id = parseInt(request.params.id, 10);
-    response.send(
-        messageService.getMessage(id)
-    );
+    const id = request.params.id;
+    messageService.getMessage(id)
+    .then(result => {
+        if (!result) return response.sendStatus(404).end();
+        response.send(result); 
+    })
+    .catch(error => {
+        console.log('error: ', error);
+        response.sendStatus(400).end(error);
+    });
 });
 
 v1.post('/message', basicAuth, (request, response) => {
