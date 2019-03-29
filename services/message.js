@@ -5,35 +5,30 @@ function isMessageInvalid(message) {
     return !message.author || !message.quote;
 }
 
+const user = 'admin123'; //encodeURIComponent('heroku_xc906x0g');
+const password = 'password2'; //encodeURIComponent("=B'rLG'YTps3li=a:jjn");
+
+const dbName = 'heroku_xc906x0g';
+const connectionUrl = `mongodb://${user}:${password}@ds127535.mlab.com:27535/${dbName}`;
+
+function getDbClient() {
+    return new MongoClient(connectionUrl, { useNewUrlParser: true }).connect();
+}
+
 module.exports = class MessageService {
     constructor() {
-
-        const user = encodeURIComponent('heroku_xc906x0g');
-        const password = encodeURIComponent("=B'rLG'YTps3li=a:jjn");
-
-        this.connectionUrl = `mongodb://${user}:${password}@ds127535.mlab.com:27535/${user}`;
-        this.dbName = 'heroku_xc906x0g';
-    
         fs.promises.readFile('./data/quotes.json')
         .then(quotes => {
             this.quotes = JSON.parse(quotes);
-        });
-
-        const client = new MongoClient(this.connectionUrl);
-        client.connect((err) => {
-            if (err) {
-                console.log('error: ', err);
-                throw err;
-            }
-            
-            console.log('Connected successfully to server');
-            const db = client.db(this.dbName);
-            client.close();
+            return getDbClient();
+        }).then(client => {
+            this.client = client;
+            this.db = client.db(dbName);
         });
     }
 
     getMessages() {
-        return this.quotes;
+        return this.db.collection('messages').find({}).toArray();
     }
 
     getMessage(id) {

@@ -16,9 +16,14 @@ app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
 v1.get('/message', (request, response) => {
-    response.send(
-        messageService.getMessages()
-    );
+    messageService.getMessages()
+        .then(results => {
+            response.send(results); 
+        })
+        .catch(error => {
+            console.log('error: ', error);
+            response.sendStatus(400).end(error);
+        });
 });
 
 v1.get('/message/:id', (request, response) => {
