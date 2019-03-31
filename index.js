@@ -55,8 +55,9 @@ v1.put('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     const message = request.body;
     messageService.updateMessage(message, id)
-    .then(() => {
-        response.sendStatus(200);
+    .then((result) => {
+        if (result.matchedCount !== 1) return response.sendStatus(404);
+        response.sendStatus(result.modifiedCount > 0 ? 200 : 304);
     })
     .catch(error => {
         console.log('error: ', error);
@@ -72,7 +73,7 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
     })
     .catch(error => {
         console.log('error: ', error);
-        response.sendStatus(400).end(error);
+        response.sendStatus(404).end(error);
     });
 });
 
