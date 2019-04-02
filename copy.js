@@ -7,6 +7,7 @@ const originalCsv = path.join('data', '100_lines.csv');
 function copy(original, copy, encoding) {
   const readStream = fs.createReadStream(original, encoding);
   const writeStream = fs.createWriteStream(copy);
+  if (encoding) writeStream.setDefaultEncoding(encoding);
 
   readStream.on('data', chunk => {
     console.log('chunk lu : ', chunk);
