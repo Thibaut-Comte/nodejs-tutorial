@@ -3,55 +3,29 @@ const app = express();
 const v1 = express.Router();
 const util = require('util');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const MessageService = require('./message');
+
+const message = new MessageService();
 
 const readFile = util.promisify(fs.readFile);
 
-
-app.use(express.json());
-app.use(express.urlencoded());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use('/api/v1', v1);
 
 v1.get('/message', (request, response) => {
-    readFile('./data/quotes.json')
-        .then(data => {
-            response.send(data);
-        });
+    response.send(message.getMessages());
 });
 
 v1.get('/message/:id', (request, response) => {
     const id = request.params.id;
-    console.log(id);
-    readFile('./data/quotes.json')
-        .then(data => {
-            const datas = JSON.parse(data);
-            const msg = datas.find(element => {
-                if (element.id === parseInt(id)) {
-                    return element;
-                }
-            });
-            msg ? response.send(msg) : response.send(response.sendStatus(404).end());
-        });
+    response.send(message.getMessage(id));
 });
 
 v1.post('/message', (request, response) => {
 
-    readFile('./data/quotes.json')
-    .then(data => {
-        const datas = JSON.parse(data);
-
-        const id = datas.length+1;
-        const quote = request.body.quote;
-        const author = request.body.author;        
-        
-        const newConst = {
-            "quote" : quote,
-            "author": author,
-            "id": id
-        };
-
-        datas.push(newConst);
-        response.sendStatus(201).end();
-    });
+    response.send(message.createMessage(request.body));
 });
 
 app.listen(3000, () => {

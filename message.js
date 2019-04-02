@@ -1,30 +1,52 @@
-const util = require('util');
 const fs = require('fs');
-const readFile = util.promisify(fs.readFile);
+
+function isMessageInvalid(message) {
+    return !message.author || !message.quote;
+}
 
 module.exports = class MessageService {
     constructor() {
-        readFile(__dirname + '/../quotes.json', {encoding: 'utf8'})
-        .then(data => {
-            this.quotes = JSON.parse(data);
+        fs.promises.readFile('./data/quotes.json')
+        .then(quotes => {
+            this.quotes = JSON.parse(quotes);
         });
     }
 
-    isMessageInvalid(message) {
-        return !message.author || !message.quote;
-    }    
-
     getMessages() {
-        return Promise.resolve(this.quotes);
+        return this.quotes;
     }
 
     getMessage(id) {
-        return Promise.resolve(
-            this.quotes.find(quote => {
-                return quote.id == id;
-            })
-        );
+        return this.quotes.find(quote => quote.id === id);
+    }
+
+    createMessage(message) {
+        if (isMessageInvalid(message)) {
+            throw 'Message_parameter_exception';
+        }
+        const ids = this.quotes.map(quote => parseInt(quote.id, 10));
+        const nextId = Math.max(...ids) + 1;
+        const newMessage = {
+            ...message,
+            id: nextId
+        };
+        this.quotes.push(newMessage);
+        return newMessage;
+    }
+
+    updateMessage(message) {
+        if (isMessageInvalid(message)) {
+            throw 'Message_parameter_exception';
+        }
+        const indexToChange = this.quotes.findIndex(quote => quote.id === message.id);
+        this.quotes[indexToChange] = message;
+    }
+
+    deleteMessage(id) {
+        const indexToChange = this.quotes.findIndex(quote => quote.id === id);
+        if (indexToChange < 0) {
+            throw 'Message_not_found_exception';
+        }
+        this.quotes.splice(indexToChange, 1);
     }
 }
-
-
