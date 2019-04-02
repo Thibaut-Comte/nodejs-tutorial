@@ -38,12 +38,12 @@ module.exports = class MessageService {
         if (isMessageInvalid(message)) {
             throw 'Message_parameter_exception';
         }
-        const indexToChange = this.quotes.findIndex(quote => quote.id === message.id);
+        const indexToChange = this.quotes.findIndex(quote => quote.id == message.id);
         this.quotes[indexToChange] = message;
     }
 
     deleteMessage(id) {
-        const indexToChange = this.quotes.findIndex(quote => quote.id === id);
+        const indexToChange = this.quotes.findIndex(quote => quote.id == id);
         if (indexToChange < 0) {
             throw 'Message_not_found_exception';
         }

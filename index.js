@@ -24,8 +24,21 @@ v1.get('/message/:id', (request, response) => {
 });
 
 v1.post('/message', (request, response) => {
-
     response.send(message.createMessage(request.body));
+});
+
+v1.put('/message/:id', (request, response) => {
+    const id = request.params.id;
+    const newMsg = {
+        ...request.body,
+        id: id
+    }
+    response.send(message.updateMessage(newMsg));
+});
+
+v1.delete('/message/:id', (request, response) => {
+    const id = request.params.id;
+    response.send(message.deleteMessage(id));
 });
 
 app.listen(3000, () => {
