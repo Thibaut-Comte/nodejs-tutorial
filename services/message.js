@@ -21,4 +21,20 @@ module.exports = class MessageService {
       })
     );
   }
+
+  isValid(message) {
+    return message.author && message.quote;
+  }
+
+  insertMessage(message) {
+    if (!this.isValid(message)) return Promise.reject('invalid message');
+    const ids = this.quotes.map(quote => quote.id);
+    const nextId = Math.max(...ids);
+    const newMessage = {
+      ...message,
+      id: nextId + 1
+    };
+    this.quotes.push(newMessage);
+    return Promise.resolve(newMessage);
+  }
 }
