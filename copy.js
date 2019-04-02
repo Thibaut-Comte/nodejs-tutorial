@@ -8,12 +8,6 @@ function copy(original, copy, encoding) {
   const readStream = fs.createReadStream(original, encoding);
   const writeStream = fs.createWriteStream(copy);
 
-  try {
-    fs.unlinkSync(copy);
-  } catch (unlinkError) {
-    console.log(`pas de fichier ${copy} à supprimer.`, unlinkError);
-  }
-
   readStream.on('data', chunk => {
     console.log('chunk lu : ', chunk);
     let isWriteOK = writeStream.write(chunk, encoding);
@@ -21,6 +15,9 @@ function copy(original, copy, encoding) {
   });
   readStream.on('close', () => {
     console.log(`lecture de ${original} terminée`);
+  });
+  readStream.on('error', (err) => {
+    console.log('error occurs during reading: ', err);
   });
 }
 
