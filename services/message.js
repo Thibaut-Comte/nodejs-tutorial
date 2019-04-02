@@ -37,4 +37,14 @@ module.exports = class MessageService {
     this.quotes.push(newMessage);
     return Promise.resolve(newMessage);
   }
+
+  updateMessage(message, id) {
+    if (!this.isValid(message)) return Promise.reject('invalid message');
+    const messageIndex = this.quotes.findIndex(
+      quote => quote.id == id
+    );
+    if (messageIndex === -1) return Promise.resolve(null);
+    this.quotes[messageIndex] = message;
+    return Promise.resolve(message);
+  }
 }
