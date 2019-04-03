@@ -52,14 +52,20 @@ module.exports = class MessageService {
 
   insertMessage(message) {
     if (!this.isValid(message)) return Promise.reject('invalid message');
-    const ids = this.quotes.map(quote => quote.id);
-    const nextId = Math.max(...ids);
-    const newMessage = {
-      ...message,
-      id: nextId + 1
-    };
-    this.quotes.push(newMessage);
-    return Promise.resolve(newMessage);
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        return collection.insertOne(message);
+      })
+      .then(result => {
+        client.close();
+        return {
+          ...message,
+          _id: result.insertedId
+        };
+      });
   }
 
   updateMessage(message, id) {
