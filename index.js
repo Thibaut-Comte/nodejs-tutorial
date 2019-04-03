@@ -57,7 +57,9 @@ v1.put('/message/:id', basicAuth, (request, response) => {
     const message = request.body;
     messageService.updateMessage(message, id)
     .then((res) => {
-        response.sendStatus(res ? 200 : 404);
+        if (!res.isFind) return response.sendStatus(404);
+        if (!res.isModified) return response.sendStatus(304);
+        response.sendStatus(200);
     })
     .catch(error => {
         console.log('error occurs: ', error);

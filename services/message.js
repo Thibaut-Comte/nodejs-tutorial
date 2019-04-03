@@ -70,12 +70,21 @@ module.exports = class MessageService {
 
   updateMessage(message, id) {
     if (!this.isValid(message)) return Promise.reject('invalid message');
-    const messageIndex = this.quotes.findIndex(
-      quote => quote.id == id
-    );
-    if (messageIndex === -1) return Promise.resolve(null);
-    this.quotes[messageIndex] = message;
-    return Promise.resolve(message);
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const query = { _id: new ObjectID(id) };
+        return collection.updateOne(query, { $set: message });
+      })
+      .then(result => {
+        client.close();
+        return {
+          isFind: result.matchedCount === 1,
+          isModified: result.modifiedCount === 1
+        };
+      });
   }
 
   deleteMessage(id) {
