@@ -35,6 +35,9 @@ v1.get('/message/:id', (request, response) => {
     messageService.getMessage(id)
     .then(message => {
         message ? response.send(message) : response.sendStatus(404);
+    })
+    .catch(error => {
+        response.sendStatus(400).end(error)
     });
 });
 v1.post('/message', basicAuth, (request, response) => {

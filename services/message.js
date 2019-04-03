@@ -1,4 +1,4 @@
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectID } = require('mongodb');
 const fs = require('fs');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
@@ -10,7 +10,6 @@ module.exports = class MessageService {
       this.quotes = JSON.parse(data);
     });
   }
-
   getConnectedClient() {
     const client = new MongoClient(
       process.env.MONGO_CONNECTION_URL,
@@ -18,7 +17,6 @@ module.exports = class MessageService {
     );
     return client.connect();
   }
-
   getMessages() {
     let client;
     return this.getConnectedClient()
@@ -32,13 +30,20 @@ module.exports = class MessageService {
         return result;
       });
   }
-
   getMessage(id) {
-    return Promise.resolve(
-      this.quotes.find(quote => {
-        return quote.id == id;
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        return collection.findOne({
+          _id: new ObjectID(id)
+        });
       })
-    );
+      .then(result => {
+        client.close();
+        return result;
+      });
   }
 
   isValid(message) {
