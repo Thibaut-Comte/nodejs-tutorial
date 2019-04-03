@@ -1,12 +1,25 @@
+const MongoClient = require('mongodb').MongoClient;
 const fs = require('fs');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
 
 module.exports = class MessageService {
   constructor() {
+    const client = new MongoClient(
+      process.env.MONGO_CONNECTION_URL,
+      { useNewUrlParser: true }
+    );
     readFile(__dirname + '/../data/quotes.json', {encoding: 'utf8'})
     .then(data => {
       this.quotes = JSON.parse(data);
+      return client.connect();
+    })
+    .then(() => {
+      console.log('connection mongo ok');
+      const db = client.db(process.env.MONGO_DB);
+    })
+    .catch(error => {
+      console.log('connection mongo failed: ', error);
     });
   }
 
