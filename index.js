@@ -10,6 +10,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
+const basicAuth = (request, response, next) => {
+    const authorization = request.headers.authorization;
+    console.log('authorization ', authorization); // 'Basic xxxx'
+    const encoded = authorization.replace('Basic ', '');
+    const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+    console.log('decoded : ', decoded);
+    // const login = decoded.split(':')[0];
+    // const password = decoded.split(':')[1];
+    const [login, password] = decoded.split(':');
+    if (login === 'node' && password === 'password') return next();
+    response.sendStatus(401);
+}
+
 v1.get('/message', (request, response) => {
     messageService.getMessages()
     .then(data => {
@@ -23,7 +36,7 @@ v1.get('/message/:id', (request, response) => {
         message ? response.send(message) : response.sendStatus(404);
     });
 });
-v1.post('/message',  (request, response) => {
+v1.post('/message', basicAuth, (request, response) => {
     const message = request.body;
     messageService.insertMessage(message)
     .then(result => {
@@ -35,7 +48,7 @@ v1.post('/message',  (request, response) => {
     });
 });
 
-v1.put('/message/:id',  (request, response) => {
+v1.put('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     const message = request.body;
     messageService.updateMessage(message, id)
@@ -48,7 +61,7 @@ v1.put('/message/:id',  (request, response) => {
     });
 });
 
-v1.delete('/message/:id',  (request, response) => {
+v1.delete('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     messageService.deleteMessage(id)
     .then(() => {
