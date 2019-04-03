@@ -47,4 +47,14 @@ module.exports = class MessageService {
     this.quotes[messageIndex] = message;
     return Promise.resolve(message);
   }
+
+  deleteMessage(id) {
+    const messageIndex = this.quotes.findIndex(
+      quote => quote.id == id
+    );
+    if (messageIndex === -1) return Promise.reject('not found');
+
+    this.quotes.splice(messageIndex, 1);
+    return Promise.resolve();
+  }
 }
