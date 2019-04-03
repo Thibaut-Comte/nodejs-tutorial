@@ -15,7 +15,6 @@ app.use('/api/v1', v1);
 
 const basicAuth = (request, response, next) => {
     const authorization = request.headers.authorization;
-    console.log(authorization);
     //On récupère la partie 1 donc la 2nde ici le mdp en base64
     const decoded = Buffer.from(authorization.split(" ")[1], 'base64').toString('utf8');
 
@@ -57,10 +56,12 @@ v1.post('/message', basicAuth,  (request, response) => {
 
 v1.put('/message/:id', basicAuth,  (request, response) => {
     const id = request.params.id;
-    const message = {...request.body, id:id};
+    const message = {...request.body};
     messageService.updateMessage(message, id)
     .then((res) => {
-        response.sendStatus(res ? 200 : 404);
+        if (!res.isFind) return response.sendStatus(404);
+        if (!res.isModified) return response.sendStatus(304);
+        response.sendStatus(200);
     })
     .catch(error => {
         console.log('error occurs: ', error);

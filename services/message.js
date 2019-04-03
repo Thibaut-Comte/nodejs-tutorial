@@ -1,3 +1,4 @@
+const {MongoClient, ObjectID} = require('mongodb');
 const fs = require('fs');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
@@ -7,19 +8,45 @@ module.exports = class MessageService {
     readFile(__dirname + '/../data/quotes.json', {encoding: 'utf8'})
     .then(data => {
       this.quotes = JSON.parse(data);
-    });
+    })
+  }
+
+  getConnectedClient() {
+    const client = new MongoClient(
+      process.env.MONGO_CONNEXION_URL,
+      {useNewUrlParser: true}
+    );
+    return client.connect();
   }
 
   getMessages() {
-    return Promise.resolve(this.quotes);
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection(process.env.MONGO_COLLECTION);
+        return collection.find({}).toArray();
+      })
+      .then(result => {
+        client.close();
+        return result;
+      })
   }
 
   getMessage(id) {
-    return Promise.resolve(
-      this.quotes.find(quote => {
-        return quote.id == id;
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection(process.env.MONGO_COLLECTION);
+        return collection.findOne({ 
+          _id: new ObjectID(id)
+        });
       })
-    );
+      .then(result => {
+        client.close();
+        return result;
+      })
   }
 
   isValid(message) {
@@ -27,34 +54,59 @@ module.exports = class MessageService {
   }
 
   insertMessage(message) {
-    if (!this.isValid(message)) return Promise.reject('invalid message');
-    const ids = this.quotes.map(quote => quote.id);
-    const nextId = Math.max(...ids);
-    const newMessage = {
-      ...message,
-      id: nextId + 1
-    };
-    this.quotes.push(newMessage);
-    return Promise.resolve(newMessage);
+    if (!this.isValid(message)) return Promise.reject('invalid message');    
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection(process.env.MONGO_COLLECTION);
+        return collection.insertOne({ 
+          ...message
+        });
+      })
+      .then(result => {
+        client.close();
+        return {
+          ...message,
+          _id: result.insertedId
+        };
+      })
   }
 
   updateMessage(message, id) {
     if (!this.isValid(message)) return Promise.reject('invalid message');
-    const messageIndex = this.quotes.findIndex(
-      quote => quote.id == id
-    );
-    if (messageIndex === -1) return Promise.resolve(null);
-    this.quotes[messageIndex] = message;
-    return Promise.resolve(message);
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection(process.env.MONGO_COLLECTION);
+        return collection.updateOne(
+          { _id : new ObjectID(id)},
+          { $set: message }
+        );
+      })
+      .then(result => {
+        client.close();
+        return {
+          isFind: result.matchedCount === 1,
+          isModified: result.modifiedCount === 1
+        };
+      })
   }
 
   deleteMessage(id) {
-    const messageIndex = this.quotes.findIndex(
-      quote => quote.id == id
-    );
-    if (messageIndex === -1) return Promise.reject('not found');
-
-    this.quotes.splice(messageIndex, 1);
-    return Promise.resolve();
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection(process.env.MONGO_COLLECTION);
+        return collection.deleteOne(
+          { _id : new ObjectID(id)}
+        );
+      })
+      .then(result => {
+        client.close();
+        return result;
+      })
   }
 }
