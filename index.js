@@ -1,46 +1,64 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 const v1 = express.Router();
-const util = require('util');
-const fs = require('fs');
-const bodyParser = require('body-parser');
-const MessageService = require('./message');
 
-const message = new MessageService();
+const MessageService = require('./services/message');
+const messageService = new MessageService();
 
-const readFile = util.promisify(fs.readFile);
-
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
 app.use('/api/v1', v1);
 
 v1.get('/message', (request, response) => {
-    response.send(message.getMessages());
+    messageService.getMessages()
+    .then(data => {
+        response.send(data);
+    });
 });
-
 v1.get('/message/:id', (request, response) => {
     const id = request.params.id;
-    response.send(message.getMessage(id));
+    messageService.getMessage(id)
+    .then(message => {
+        message ? response.send(message) : response.sendStatus(404);
+    });
+});
+v1.post('/message',  (request, response) => {
+    const message = request.body;
+    messageService.insertMessage(message)
+    .then(result => {
+        response.send(result);
+    })
+    .catch(error => {
+        console.log('error occurs: ', error);
+        response.sendStatus(400).end(error);
+    });
 });
 
-v1.post('/message', (request, response) => {
-    response.send(message.createMessage(request.body));
-});
-
-v1.put('/message/:id', (request, response) => {
+v1.put('/message/:id',  (request, response) => {
     const id = request.params.id;
-    const newMsg = {
-        ...request.body,
-        id: id
-    }
-    response.send(message.updateMessage(newMsg));
+    const message = {...request.body, id:id};
+    messageService.updateMessage(message, id)
+    .then((res) => {
+        response.sendStatus(res ? 200 : 404);
+    })
+    .catch(error => {
+        console.log('error occurs: ', error);
+        response.sendStatus(400).end(error);
+    });
 });
 
-v1.delete('/message/:id', (request, response) => {
+v1.delete('/message/:id',  (request, response) => {
     const id = request.params.id;
-    response.send(message.deleteMessage(id));
-});
+    messageService.deleteMessage(id)
+    .then(() => {
+        response.sendStatus(200);
+    })
+    .catch(error => {
+        response.sendStatus(404).end(error);
+    });
+})
 
 app.listen(3000, () => {
-    console.log('Server listening on port 3000 !')
+    console.log('Server listening on port 3000!');
 });
