@@ -5,26 +5,32 @@ const readFile = util.promisify(fs.readFile);
 
 module.exports = class MessageService {
   constructor() {
+    readFile(__dirname + '/../data/quotes.json', {encoding: 'utf8'})
+    .then(data => {
+      this.quotes = JSON.parse(data);
+    });
+  }
+
+  getConnectedClient() {
     const client = new MongoClient(
       process.env.MONGO_CONNECTION_URL,
       { useNewUrlParser: true }
     );
-    readFile(__dirname + '/../data/quotes.json', {encoding: 'utf8'})
-    .then(data => {
-      this.quotes = JSON.parse(data);
-      return client.connect();
-    })
-    .then(() => {
-      console.log('connection mongo ok');
-      const db = client.db(process.env.MONGO_DB);
-    })
-    .catch(error => {
-      console.log('connection mongo failed: ', error);
-    });
+    return client.connect();
   }
 
   getMessages() {
-    return Promise.resolve(this.quotes);
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        return collection.find({}).toArray();
+      })
+      .then(result => {
+        client.close();
+        return result;
+      });
   }
 
   getMessage(id) {
