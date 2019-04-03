@@ -70,13 +70,13 @@ v1.put('/message/:id', basicAuth, (request, response) => {
 v1.delete('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     messageService.deleteMessage(id)
-    .then(() => {
-        response.sendStatus(200);
+    .then((isDeleted) => {
+        response.sendStatus(isDeleted ? 200 : 404);
     })
     .catch(error => {
-        response.sendStatus(404).end(error);
+        response.sendStatus(400).end(error);
     });
-})
+});
 
 app.listen(process.env.APP_PORT, () => {
     console.log('Server listening on port:', process.env.APP_PORT);

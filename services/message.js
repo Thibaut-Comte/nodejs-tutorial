@@ -1,15 +1,6 @@
 const { MongoClient, ObjectID } = require('mongodb');
-const fs = require('fs');
-const util = require('util');
-const readFile = util.promisify(fs.readFile);
 
 module.exports = class MessageService {
-  constructor() {
-    readFile(__dirname + '/../data/quotes.json', {encoding: 'utf8'})
-    .then(data => {
-      this.quotes = JSON.parse(data);
-    });
-  }
   getConnectedClient() {
     const client = new MongoClient(
       process.env.MONGO_CONNECTION_URL,
@@ -17,6 +8,7 @@ module.exports = class MessageService {
     );
     return client.connect();
   }
+
   getMessages() {
     let client;
     return this.getConnectedClient()
@@ -30,6 +22,7 @@ module.exports = class MessageService {
         return result;
       });
   }
+
   getMessage(id) {
     let client;
     return this.getConnectedClient()
@@ -88,12 +81,17 @@ module.exports = class MessageService {
   }
 
   deleteMessage(id) {
-    const messageIndex = this.quotes.findIndex(
-      quote => quote.id == id
-    );
-    if (messageIndex === -1) return Promise.reject('not found');
-
-    this.quotes.splice(messageIndex, 1);
-    return Promise.resolve();
+    let client;
+    return this.getConnectedClient()
+      .then((connectedClient) => {
+        client = connectedClient;
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const query = { _id: new ObjectID(id) };
+        return collection.deleteOne(query);
+      })
+      .then(result => {
+        client.close();
+        return result.deletedCount === 1;
+      });
   }
 }
