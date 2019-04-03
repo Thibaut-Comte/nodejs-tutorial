@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const v1 = express.Router();
+require('dotenv').config();
 
 const MessageService = require('./services/message');
 const messageService = new MessageService();
@@ -72,6 +73,6 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
     });
 })
 
-app.listen(3000, () => {
-    console.log('Server listening on port 3000!');
+app.listen(process.env.APP_PORT, () => {
+    console.log('Server listening on port:', process.env.APP_PORT);
 });
