@@ -2,12 +2,24 @@
 <html>
     <head>
         <meta charset="utf-8" />
+        <link href="./style.css" type="text/css" rel="stylesheet"/>
         <title>websocket</title>
     </head>
     <body>
         <h1>websocket example</h1>
+        <div class="chat">
+            <div class="chat-header">
+                Votre nom : <input type="text" name="chat-name" />
+                <button class="chat-login" onclick="connectUser()">Valider</button>
+            </div>
+            <div class="chat-content"></div>
+            <div class="chat-form">
+                <textarea value="" rows="5" cols="45" name="chat-message" disabled="disabled"></textarea>
+                <button class="chat-send" disabled="disabled">ok</button>
+            </div>
+        </div>
         <script>
-            var mySocket = new WebSocket('ws://localhost:3001');
+            const mySocket = new WebSocket('ws://localhost:3001');
             mySocket.onopen = (event) => {
                 console.info('WebSocket connection opened'); 
                 mySocket.send('Message from front-end!'); 
@@ -21,6 +33,9 @@
             mySocket.onclose = () => {
                 console.info('WebSocket connection closed'); 
             }
+
+
         </script>
     </body>
 </html>
+

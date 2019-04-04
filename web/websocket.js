@@ -11,7 +11,7 @@ webSocketServer.on('connection', webSocket => {
         console.log('socket opened by client ', event);
     };
     webSocket.onerror = error => {
-        console.error('WebSocket error occurs:', error);
+        console.error('WebSocket error occurs: ', error);
     };
     webSocket.onclose = event => {
         console.error('WebSocket connection closed by client ', event); 
