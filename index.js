@@ -4,25 +4,13 @@ const app = express();
 const v1 = express.Router();
 require('dotenv').config();
 
+const { basicAuth } = require('./middleware/basic-auth');
 const MessageService = require('./services/message');
 const messageService = new MessageService();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
-
-const basicAuth = (request, response, next) => {
-    const authorization = request.headers.authorization;
-    console.log('authorization ', authorization); // 'Basic xxxx'
-    const encoded = authorization.replace('Basic ', '');
-    const decoded = Buffer.from(encoded, 'base64').toString('utf8');
-    console.log('decoded : ', decoded);
-    // const login = decoded.split(':')[0];
-    // const password = decoded.split(':')[1];
-    const [login, password] = decoded.split(':');
-    if (login === 'node' && password === 'password') return next();
-    response.sendStatus(401);
-}
 
 v1.get('/message', (request, response) => {
     messageService.getMessages()
@@ -81,3 +69,4 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
 app.listen(process.env.APP_PORT, () => {
     console.log('Server listening on port:', process.env.APP_PORT);
 });
+
