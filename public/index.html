@@ -15,27 +15,60 @@
             <div class="chat-content"></div>
             <div class="chat-form">
                 <textarea value="" rows="5" cols="45" name="chat-message" disabled="disabled"></textarea>
-                <button class="chat-send" disabled="disabled">ok</button>
+                <button class="chat-send" disabled="disabled" onclick="sendMessage()">ok</button>
             </div>
         </div>
         <script>
-            const mySocket = new WebSocket('ws://localhost:3001');
-            mySocket.onopen = (event) => {
-                console.info('WebSocket connection opened'); 
-                mySocket.send('Message from front-end!'); 
-            };
-            mySocket.onerror = (error) => {
-                console.error('WebSocket error occurs:', error);
-            };
-            mySocket.onmessage = (messageEvent) => {
-                console.info('Message event received from server: ', messageEvent);
-            }
-            mySocket.onclose = () => {
-                console.info('WebSocket connection closed'); 
+            let user;
+            let mySocket
+            function connect() {
+                mySocket= new WebSocket('ws://localhost:3001');
+                mySocket.onopen = (event) => {
+                    console.info('WebSocket connection opened ', event); 
+                };
+                mySocket.onerror = (error) => {
+                    console.error('WebSocket error occurs:', error);
+                };
+                mySocket.onmessage = (messageEvent) => {
+                    let data;
+                    try {
+                        data = JSON.parse(messageEvent.data);
+                    } catch (e) {
+                        data = messageEvent.data
+                    }
+                    const newDiv = document.createElement('div');
+                    if (typeof data === 'string') {
+                        newDiv.append(data);
+                    } else {
+                        newDiv.append(`[${data.user}] ${data.message}`);
+                    }
+                    document.getElementsByClassName('chat-content')[0].appendChild(newDiv);
+                };
+                mySocket.onclose = () => {
+                    console.info('WebSocket connection closed'); 
+                };
             }
 
+            function connectUser() {
+                user = document.getElementsByName('chat-name')[0].value;
+                if (user) {
+                    connect();
+                    document.getElementsByName('chat-message')[0].disabled = false;
+                    document.getElementsByClassName('chat-send')[0].disabled = false;
+                }
+            }
+
+            function sendMessage() {
+                const message = document.getElementsByName('chat-message')[0].value;
+                mySocket.send(JSON.stringify({
+                    user,
+                    message
+                }));
+                document.getElementsByName('chat-message')[0].value = '';
+            }
 
         </script>
     </body>
 </html>
 
+;
