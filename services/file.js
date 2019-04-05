@@ -51,9 +51,34 @@ module.exports = class FileService {
     .then(connectedClient => {
       client = connectedClient;
       return client.query(
-        'SELECT id, "file-name", "mime-type", "original-name", size, encoding from filestore;'
+        'SELECT id, "file-name", "mime-type", "original-name", size, encoding FROM filestore;'
       );      
     })
-    .then((result) => result.rows);
+    .then((result) => {
+      client.release();
+      return result.rows;
+    });
   }
+
+  getFile(id) {
+    let client;
+    return this.pool.connect()
+    .then(connectedClient => {
+      client = connectedClient;
+      return client.query(
+        'SELECT "file-name", "mime-type", "original-name", size, encoding FROM filestore WHERE id=$1',
+        [id]
+      );
+    })
+    .then(result => {
+      client.release();
+      if (result.rows.length === 0) return Promise.reject('no result');
+      const fileInfo = result.rows[0];
+      const fileReadStream = fs.createReadStream(
+        __dirname + '/../data/upload/' + fileInfo['file-name']
+      );
+      return { fileReadStream, fileInfo };
+    });
+  }
+
 }
