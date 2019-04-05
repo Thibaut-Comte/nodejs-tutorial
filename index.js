@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 const app = express();
 const v1 = express.Router();
 require('dotenv').config();
@@ -7,6 +8,7 @@ require('dotenv').config();
 const { basicAuth } = require('./middleware/basic-auth');
 const MessageService = require('./services/message');
 const messageService = new MessageService();
+const upload = multer({ dest: 'data/upload/' });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -39,7 +41,6 @@ v1.post('/message', basicAuth, (request, response) => {
         response.sendStatus(400).end(error);
     });
 });
-
 v1.put('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     const message = request.body;
@@ -54,7 +55,6 @@ v1.put('/message/:id', basicAuth, (request, response) => {
         response.sendStatus(400).end(error);
     });
 });
-
 v1.delete('/message/:id', basicAuth, (request, response) => {
     const id = request.params.id;
     messageService.deleteMessage(id)
@@ -64,6 +64,16 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
     .catch(error => {
         response.sendStatus(400).end(error);
     });
+});
+v1.post('/file', upload.single('myFile'), (request, response) => {
+    console.log('myFile? ', request.file)
+    response.sendStatus(200);
+});
+v1.get('/file', (request, response) => {
+    // response.download('./data/map.pdf');
+    const fs = require('fs');
+    const readStream = fs.createReadStream('./data/map.pdf');
+    readStream.pipe(response);
 });
 
 app.listen(process.env.APP_PORT, () => {
