@@ -91,10 +91,11 @@ v1.post('/file', basicAuth, upload.single('myFile'), (request, response) => {
 //     readStream.pipe(response);
 // });
 
-v1.get('/file', (request, response) => {
-    fileService.getFileInfos()
-    .then(result => {
-        response.send(result);
+v1.get('/file/:id', (request, response) => {
+    const id = request.params.id;
+    fileService.getFile(id)
+    .then(fileReadStream => {
+        fileReadStream.pipe(response);
     })
     .catch(error => {
         console.log('error occurs during render ', error);

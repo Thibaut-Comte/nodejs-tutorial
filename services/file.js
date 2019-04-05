@@ -58,4 +58,26 @@ module.exports = class FileService {
             return result.rows;
         });
     }
+
+    getFile(id) {
+        let client;
+        return this.pool.connect()
+        .then(connectedClient => {
+            client = connectedClient;
+            return client.query(
+                `SELECT *
+                from filestore
+                WHERE id = $1`,
+                [
+                    id
+                ]
+            );
+        })
+        .then(result => {
+            console.log(result.rows[0]['file-name']);
+            const fs = require('fs');
+            const readStream = fs.createReadStream(__dirname + '/../' + process.env.UPLOAD_DIR + result.rows[0]['file-name']);
+            return readStream;
+        });
+    }
 }
