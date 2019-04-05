@@ -2,32 +2,22 @@ require('dotenv').config();
 const db = require('dotenv');
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer  = require('multer')
 const app = express();
 const v1 = express.Router();
+const { basicAuth } = require('./middleware/basic-auth');
 
 const MessageService = require('./services/message');
 const messageService = new MessageService();
+const FileService = require('./services/file');
+const fileService = new FileService();
+upload = multer({ dest: 'data/uploads/' })
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
-
-const basicAuth = (request, response, next) => {
-    const authorization = request.headers.authorization;
-    //On récupère la partie 1 donc la 2nde ici le mdp en base64
-    const decoded = Buffer.from(authorization.split(" ")[1], 'base64').toString('utf8');
-
-    const login = decoded.split(":")[0];
-    const pwd = decoded.split(":")[1];
-
-    if (login == "test" && pwd == "password") {
-        return next();
-    } else {
-        response.sendStatus(401).end();
-
-    }
-};
 
 v1.get('/message', (request, response) => {
     messageService.getMessages()
@@ -72,13 +62,34 @@ v1.put('/message/:id', basicAuth,  (request, response) => {
 v1.delete('/message/:id', basicAuth,  (request, response) => {
     const id = request.params.id;
     messageService.deleteMessage(id)
-    .then(() => {
-        response.sendStatus(200);
+    .then((isDeleted) => {
+        response.sendStatus(isDeleted ? 200 : 404);
     })
     .catch(error => {
         response.sendStatus(404).end(error);
     });
-})
+});
+
+v1.post('/file', basicAuth, upload.single('myFile'), (request, response) => {
+    console.log('file ?', request.file);
+    fileService.saveFileInfos(request.file)
+    .then(() => {
+        response.sendStatus(200);
+    })
+    .catch(error => {
+        console.log('error occurs during save ', error);
+        response.sendStatus(400).end(error);
+    });
+});
+
+v1.get('/file', (request, response) => {
+    //Download
+    // response.download('./data/map.pdf');
+    //Afficher le PDF
+    const fs = require('fs');
+    const readStream = fs.createReadStream('./data/map.pdf');
+    readStream.pipe(response);
+});
 
 app.listen(process.env.APP_PORT, () => {
     console.log('Server listening on port :',process.env.APP_PORT);

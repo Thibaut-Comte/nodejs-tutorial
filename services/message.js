@@ -3,6 +3,7 @@ const fs = require('fs');
 const util = require('util');
 const readFile = util.promisify(fs.readFile);
 
+
 module.exports = class MessageService {
   constructor() {
     readFile(__dirname + '/../data/quotes.json', {encoding: 'utf8'})
@@ -106,7 +107,7 @@ module.exports = class MessageService {
       })
       .then(result => {
         client.close();
-        return result;
+        return result.deletedCount === 1;
       })
   }
 }
