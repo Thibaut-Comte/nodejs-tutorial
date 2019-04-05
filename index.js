@@ -107,6 +107,10 @@ v1.get('/file/:id', (request, response) => {
     });
 });
 
+v1.delete('/file/:id', (request, response) => {
+
+});
+
 app.listen(process.env.APP_PORT, () => {
     console.log('Server listening on port:', process.env.APP_PORT);
 });

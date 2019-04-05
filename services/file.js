@@ -8,14 +8,35 @@ module.exports = class FileService {
     this.pool = new Pool();
   }
 
-  saveFileInfos(fileInfo) {
+  openTransaction() {
     let client;
     return this.pool.connect()
     .then(connectedClient => {
       client = connectedClient;
       return client.query('BEGIN');
     })
+    .then(() => client);
+  }
+
+  validateTransaction(client) {
+    return client.query('COMMIT')
     .then(() => {
+      client.release();
+    });
+  }
+
+  abortTransaction(client) {
+    return client.query('ROLLBACK')
+    .then(() => {
+      client.release();
+    });
+  }
+
+  saveFileInfos(fileInfo) {
+    let client;
+    return this.openTransaction()
+    .then(connectedClient => {
+      client = connectedClient;
       return client.query(
         `INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding)
          VALUES ($1, $2, $3, $4, $5)`,
@@ -29,16 +50,12 @@ module.exports = class FileService {
       );      
     })
     .then(() => {
-      return client.query('COMMIT');
-    })
-    .then(() => {
-      client.release();
+      return this.validateTransaction(client);
     })
     .catch(err => {
       console.log('error occurs: ', err);
-      return client.query('ROLLBACK')
+      return this.abortTransaction(client)
       .then(() => {
-        client.release();
         return unlink('data/upload/' + fileInfo.filename);
       })
       .then(() => Promise.reject(err));
