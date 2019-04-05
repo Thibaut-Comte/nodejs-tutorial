@@ -108,7 +108,15 @@ v1.get('/file/:id', (request, response) => {
 });
 
 v1.delete('/file/:id', (request, response) => {
-
+    const id = request.params.id;
+    fileService.deleteFile(id)
+    .then(() => {
+        response.sendStatus(200);
+    })
+    .catch(error => {
+        console.log('error occurs: ', error);
+        response.sendStatus(500).end(error);
+    });
 });
 
 app.listen(process.env.APP_PORT, () => {

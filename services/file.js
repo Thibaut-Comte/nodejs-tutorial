@@ -98,4 +98,35 @@ module.exports = class FileService {
     });
   }
 
+  deleteFile(id) {
+    let client;
+    let fileName;
+    return this.openTransaction()
+    .then(connectedClient => {
+      client = connectedClient;
+      return client.query(
+        'SELECT "file-name" FROM filestore WHERE id=$1',
+        [id]
+      );
+    })
+    .then(({ rows }) => { 
+      if (rows.length === 0) return Promise.reject('no result');
+      fileName = rows[0]['file-name'];
+      return client.query(
+        'DELETE FROM filestore WHERE id=$1',
+        [id]
+      );
+    })
+    .then(() => {
+      return unlink(__dirname + '/../data/upload/' + fileName);
+    })
+    .then(() => {
+      return this.validateTransaction(client);
+    })
+    .catch((err) => {
+      return this.abortTransaction(client)
+      .then(() => Promise.reject(err));
+    });
+  }
+
 }
