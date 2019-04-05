@@ -91,16 +91,37 @@ v1.post('/file', basicAuth, upload.single('myFile'), (request, response) => {
 //     readStream.pipe(response);
 // });
 
+v1.get('/file',  (request, response) => {
+    fileService.getFileInfos()
+    .then(result => {
+        response.send(result);
+    })
+    .catch(error => {
+        console.log('error occurs: ', error);
+        response.sendStatus(500).end(error);
+    });
+});
+
 v1.get('/file/:id', (request, response) => {
     const id = request.params.id;
     fileService.getFile(id)
-    .then(fileReadStream => {
+    .then(({ fileReadStream, fileInfo }) => {
+        response.setHeader(
+            'Content-disposition',
+            'attachment; filename=' + fileInfo['original-name']
+        );
+        response.setHeader('Content-type', fileInfo['mime-type']);
+        response.setHeader('Content-length', fileInfo.size);
         fileReadStream.pipe(response);
     })
     .catch(error => {
-        console.log('error occurs during render ', error);
-        response.sendStatus(500).end(error);
+        console.log('error occurs: ', error);
+        response.sendStatus(404).end(error);
     });
+});
+
+v1.delete('/file/:id', (request, response) => {
+    
 });
 
 app.listen(process.env.APP_PORT, () => {
