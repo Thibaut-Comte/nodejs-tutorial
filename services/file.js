@@ -88,8 +88,8 @@ module.exports = class FileService {
         [id]
       );
       await unlink(__dirname + '/../data/upload/' + fileName);
-      return this.validateTransaction(client);
-    } catch(err) {
+      await this.validateTransaction(client);
+    } catch (err) {
       await this.abortTransaction(client);
       return Promise.reject(err);
     }
