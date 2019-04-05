@@ -8,6 +8,8 @@ require('dotenv').config();
 const { basicAuth } = require('./middleware/basic-auth');
 const MessageService = require('./services/message');
 const messageService = new MessageService();
+const FileService = require('./services/file');
+const fileService = new FileService();
 const upload = multer({ dest: 'data/upload/' });
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -66,8 +68,14 @@ v1.delete('/message/:id', basicAuth, (request, response) => {
     });
 });
 v1.post('/file', upload.single('myFile'), (request, response) => {
-    console.log('myFile? ', request.file)
-    response.sendStatus(200);
+    fileService.saveFileInfos(request.file)
+    .then(() => {
+        response.sendStatus(200);
+    })
+    .catch(error => {
+        console.log('error occurs during save: ', error);
+        response.sendStatus(400).end(error);
+    })
 });
 v1.get('/file', (request, response) => {
     // response.download('./data/map.pdf');
