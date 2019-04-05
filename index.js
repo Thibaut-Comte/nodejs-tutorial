@@ -74,14 +74,25 @@ v1.post('/file', upload.single('myFile'), (request, response) => {
     })
     .catch(error => {
         console.log('error occurs during save: ', error);
-        response.sendStatus(400).end(error);
+        response.sendStatus(500).end(error);
     })
 });
-v1.get('/file', (request, response) => {
-    // response.download('./data/map.pdf');
-    const fs = require('fs');
-    const readStream = fs.createReadStream('./data/map.pdf');
-    readStream.pipe(response);
+// v1.get('/file', (request, response) => {
+//     // response.download('./data/map.pdf');
+//     const fs = require('fs');
+//     const readStream = fs.createReadStream('./data/map.pdf');
+//     readStream.pipe(response);
+// });
+
+v1.get('/file',  (request, response) => {
+    fileService.getFileInfos()
+    .then(result => {
+        response.send(result);
+    })
+    .catch(error => {
+        console.log('error occurs: ', error);
+        response.sendStatus(500).end(error);
+    });
 });
 
 app.listen(process.env.APP_PORT, () => {
