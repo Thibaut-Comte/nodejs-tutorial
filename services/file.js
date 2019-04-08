@@ -27,10 +27,10 @@ module.exports = class FileService {
   async saveFileInfos(fileInfo) {
     let client;
     try {
-      client = await this.openTransaction()
+      client = await this.openTransaction();
       await client.query(
         `INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding)
-        VALUES ($1, $2, $3, $4, $5)`,
+          VALUES ($1, $2, $3, $4, $5)`,
         [
           fileInfo.filename,
           fileInfo.mimetype,
@@ -38,13 +38,13 @@ module.exports = class FileService {
           fileInfo.size,
           fileInfo.encoding
         ]
-      );      
+      );
       return this.validateTransaction(client);
     } catch(err) {
-      console.log('error occurs: ', err);
-      await this.abortTransaction(client)
-      await unlink('data/upload/' + fileInfo.filename);
-      return Promise.reject(err); // or throw err
+        console.log('error occurs: ', err);
+        await this.abortTransaction(client);
+        await unlink('data/upload/' + fileInfo.filename);
+        return Promise.reject(err);
     }
   }
 
