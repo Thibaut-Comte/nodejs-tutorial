@@ -29,8 +29,8 @@ module.exports = class FileService {
     try {
       client = await this.openTransaction();
       await client.query(
-        `INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding)
-          VALUES ($1, $2, $3, $4, $5)`,
+        'INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding) ' +
+        'VALUES ($1, $2, $3, $4, $5)',
         [
           fileInfo.filename,
           fileInfo.mimetype,
@@ -51,7 +51,7 @@ module.exports = class FileService {
   async getFileInfos() {
     const client = await this.pool.connect();
     const result = await client.query(
-      'SELECT id, "file-name", "mime-type", "original-name", size, encoding FROM filestore;'
+      'SELECT id, "file-name", "mime-type", "original-name", size, encoding FROM filestore'
     );      
     client.release();
     return result.rows;
@@ -66,6 +66,7 @@ module.exports = class FileService {
     client.release();
     if (result.rows.length === 0) return Promise.reject('no result');
     const fileInfo = result.rows[0];
+    
     const fileReadStream = fs.createReadStream(
       __dirname + '/../data/upload/' + fileInfo['file-name']
     );
@@ -74,15 +75,14 @@ module.exports = class FileService {
 
   async deleteFile(id) {
     let client;
-    let fileName;
     try {
-      client = await this.openTransaction()
+      client = await this.openTransaction();
       const { rows } = await client.query(
         'SELECT "file-name" FROM filestore WHERE id=$1',
         [id]
       );
-      if (rows.length === 0) return Promise.reject('no result');
-      fileName = rows[0]['file-name'];
+      if (rows.length === 0) throw 'no result';
+      const fileName = rows[0]['file-name'];
       await client.query(
         'DELETE FROM filestore WHERE id=$1',
         [id]

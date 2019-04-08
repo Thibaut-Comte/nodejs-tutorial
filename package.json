@@ -7,14 +7,16 @@
     "start": "nodemon node index.js",
     "debug": "nodemon node --inspect index.js",
     "test": "jest",
+    "test:watch": "jest --watch",
     "lint": "eslint \"./**/*.js\""
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^5.16.0",
-    "jest": "^24.5.0",
-    "nodemon": "^1.18.10"
+    "jest": "24.7.1",
+    "nodemon": "^1.18.10",
+    "supertest": "^4.0.2"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -23,5 +25,16 @@
     "mongodb": "^3.2.2",
     "multer": "^1.4.1",
     "pg": "^7.9.0"
+  },
+  "jest": {
+    "rootDir": "./",
+    "bail": false,
+    "clearMocks": true,
+    "collectCoverage": true,
+    "verbose": true,
+    "collectCoverageFrom": [
+      "./**/*.js",
+      "!./coverage/**/*.js"
+    ]
   }
 }
