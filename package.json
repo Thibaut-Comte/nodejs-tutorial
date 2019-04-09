@@ -6,13 +6,15 @@
   "scripts": {
     "start": "nodemon node index.js",
     "debug": "nodemon node --inspect index.js",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ./**/*.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^1.18.10",
-    "jest": "^24.5.0"
+    "eslint": "^5.16.0",
+    "jest": "^24.5.0",
+    "nodemon": "^1.18.10"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
