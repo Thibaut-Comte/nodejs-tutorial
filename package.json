@@ -7,7 +7,7 @@
     "start": "nodemon node index.js",
     "debug": "nodemon node --inspect index.js",
     "test": "jest",
-    "lint": "eslint ./**/*.js"
+    "lint": "eslint \"./**/*.js\""
   },
   "author": "",
   "license": "ISC",
