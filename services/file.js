@@ -27,7 +27,7 @@ module.exports = class FileService {
     abortTransaction(client) {
         return client.query('ROLLBACK')
             .then(() => {
-                clien.release();
+                client.release();
             })
     }
 
@@ -95,6 +95,38 @@ module.exports = class FileService {
           );
           return { fileReadStream, fileInfo };
         });
+      }
+
+      deleteFile(id) {
+          let client;
+          return this.openTransaction()
+          .then(connectedClient => {
+              client = connectedClient;
+              return client.query(
+                  `SELECT "file-name" FROM filestore WHERE id=$id`,
+                  [id]
+              );
+          })
+          .then(({ rows }) => {
+              if (rows === 0) return Promise.reject('no result');
+              fileName = rows[0]['file-name'];
+              return client.query(
+                `DELETE FROM filestore WHERE id=$id`,
+                [id]
+              );
+          })
+          .then(() => {
+              return unlink(__dirname + '/../' + process.env.UPLOAD_DIR + fileName);
+          })
+          .then(() => {
+              this.validateTransaction(client);
+          })
+          .catch((err) => {
+            return this.abortTransaction(client)
+            .then(() => {
+                Promise.reject(err);
+            })
+          })
       }
 
 }
