@@ -9,89 +9,59 @@ module.exports = class MessageService {
     return client.connect();
   }
 
-  getMessages() {
-    let client;
-    return this.getConnectedClient()
-      .then((connectedClient) => {
-        client = connectedClient;
-        const collection = client.db(process.env.MONGO_DB).collection('messages');
-        return collection.find({}).toArray();
-      })
-      .then(result => {
-        client.close();
-        return result;
-      });
+  async getMessages() {
+    const client = await this.getConnectedClient();
+    const collection = client.db(process.env.MONGO_DB).collection('messages');
+    const result = collection.find({}).toArray();
+    await client.close();
+    return result;
   }
 
-  getMessage(id) {
-    let client;
-    return this.getConnectedClient()
-      .then((connectedClient) => {
-        client = connectedClient;
-        const collection = client.db(process.env.MONGO_DB).collection('messages');
-        return collection.findOne({
-          _id: new ObjectID(id)
-        });
-      })
-      .then(result => {
-        client.close();
-        return result;
-      });
+  async getMessage(id) {
+    const client = await this.getConnectedClient();
+    const collection = client.db(process.env.MONGO_DB).collection('messages');
+    const result = collection.findOne({
+      _id: new ObjectID(id)
+    });
+    await client.close();
+    return result;
   }
 
   isValid(message) {
     return message.author && message.quote;
   }
 
-  insertMessage(message) {
+  async insertMessage(message) {
     if (!this.isValid(message)) return Promise.reject('invalid message');
-    let client;
-    return this.getConnectedClient()
-      .then((connectedClient) => {
-        client = connectedClient;
-        const collection = client.db(process.env.MONGO_DB).collection('messages');
-        return collection.insertOne(message);
-      })
-      .then(result => {
-        client.close();
-        return {
-          ...message,
-          _id: result.insertedId
-        };
-      });
+    const client = await this.getConnectedClient();
+    const collection = client.db(process.env.MONGO_DB).collection('messages');
+    const result = await collection.insertOne(message);
+    await client.close();
+    return {
+      ...message,
+      _id: result.insertedId
+    };
   }
 
-  updateMessage(message, id) {
+  async updateMessage(message, id) {
     if (!this.isValid(message)) return Promise.reject('invalid message');
-    let client;
-    return this.getConnectedClient()
-      .then((connectedClient) => {
-        client = connectedClient;
-        const collection = client.db(process.env.MONGO_DB).collection('messages');
-        const query = { _id: new ObjectID(id) };
-        return collection.updateOne(query, { $set: message });
-      })
-      .then(result => {
-        client.close();
-        return {
-          isFind: result.matchedCount === 1,
-          isModified: result.modifiedCount === 1
-        };
-      });
+    const client = await this.getConnectedClient();
+    const collection = client.db(process.env.MONGO_DB).collection('messages');
+    const query = { _id: new ObjectID(id) };
+    const result = await collection.updateOne(query, { $set: message });
+    await client.close();
+    return {
+      isFind: result.matchedCount === 1,
+      isModified: result.modifiedCount === 1
+    };
   }
 
-  deleteMessage(id) {
-    let client;
-    return this.getConnectedClient()
-      .then((connectedClient) => {
-        client = connectedClient;
-        const collection = client.db(process.env.MONGO_DB).collection('messages');
-        const query = { _id: new ObjectID(id) };
-        return collection.deleteOne(query);
-      })
-      .then(result => {
-        client.close();
-        return result.deletedCount === 1;
-      });
+  async deleteMessage(id) {
+    const client = await this.getConnectedClient();
+    const collection = client.db(process.env.MONGO_DB).collection('messages');
+    const query = { _id: new ObjectID(id) };
+    const result = await collection.deleteOne(query);
+    await client.close();
+    return result.deletedCount === 1;
   }
 }
