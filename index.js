@@ -16,83 +16,78 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
-v1.get('/message', (request, response) => {
-    messageService.getMessages()
-    .then(data => {
-        response.send(data);
-    });
+v1.get('/message', async (request, response) => {
+    const data = await messageService.getMessages()
+    response.send(data);
 });
-v1.get('/message/:id', (request, response) => {
+
+v1.get('/message/:id', async (request, response) => {
     const id = request.params.id;
-    messageService.getMessage(id)
-    .then(message => {
+    try {
+        const message = await messageService.getMessage(id);
         message ? response.send(message) : response.sendStatus(404);
-    })
-    .catch(error => {
-        response.sendStatus(400).end(error)
-    });
+    } catch (error) {
+        response.sendStatus(400).end(error);
+    }
 });
-v1.post('/message', basicAuth, (request, response) => {
+
+v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
-    messageService.insertMessage(message)
-    .then(result => {
+    try {
+        const result = await messageService.insertMessage(message)
         response.send(result);
-    })
-    .catch(error => {
+    } catch(error) {
         console.log('error occurs: ', error);
         response.sendStatus(400).end(error);
-    });
+    }
 });
-v1.put('/message/:id', basicAuth, (request, response) => {
+
+v1.put('/message/:id', basicAuth, async (request, response) => {
     const id = request.params.id;
     const message = request.body;
-    messageService.updateMessage(message, id)
-    .then((res) => {
+    try {
+        const res = await messageService.updateMessage(message, id);
         if (!res.isFind) return response.sendStatus(404);
         if (!res.isModified) return response.sendStatus(304);
         response.sendStatus(200);
-    })
-    .catch(error => {
+    } catch(error) {
         console.log('error occurs: ', error);
         response.sendStatus(400).end(error);
-    });
+    }
 });
-v1.delete('/message/:id', basicAuth, (request, response) => {
+v1.delete('/message/:id', basicAuth, async (request, response) => {
     const id = request.params.id;
-    messageService.deleteMessage(id)
-    .then((isDeleted) => {
+    try {
+        const isDeleted = await messageService.deleteMessage(id);
         response.sendStatus(isDeleted ? 200 : 404);
-    })
-    .catch(error => {
+    } catch(error) {
         response.sendStatus(400).end(error);
-    });
+    }
 });
-v1.post('/file', upload.single('myFile'), (request, response) => {
-    fileService.saveFileInfos(request.file)
-    .then(() => {
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+    try {
+        await fileService.saveFileInfos(request.file);
         response.sendStatus(200);
-    })
-    .catch(error => {
+    } catch(error) {
         console.log('error occurs during save: ', error);
         response.sendStatus(500).end(error);
-    })
+    }
 });
 
-v1.get('/file',  (request, response) => {
-    fileService.getFileInfos()
-    .then(result => {
+v1.get('/file', async (request, response) => {
+    try {
+        const result = await fileService.getFileInfos();
         response.send(result);
-    })
-    .catch(error => {
+    } catch(error) {
         console.log('error occurs: ', error);
         response.sendStatus(500).end(error);
-    });
+    }
 });
 
-v1.get('/file/:id', (request, response) => {
+v1.get('/file/:id', async (request, response) => {
     const id = request.params.id;
-    fileService.getFile(id)
-    .then(({ fileReadStream, fileInfo }) => {
+    try {
+        const { fileReadStream, fileInfo } = await fileService.getFile(id)
         response.setHeader(
             'Content-disposition',
             'attachment; filename=' + fileInfo['original-name']
@@ -100,23 +95,21 @@ v1.get('/file/:id', (request, response) => {
         response.setHeader('Content-type', fileInfo['mime-type']);
         response.setHeader('Content-length', fileInfo.size);
         fileReadStream.pipe(response);
-    })
-    .catch(error => {
+    } catch(error) {
         console.log('error occurs: ', error);
         response.sendStatus(404).end(error);
-    });
+    }
 });
 
-v1.delete('/file/:id', (request, response) => {
+v1.delete('/file/:id', async (request, response) => {
     const id = request.params.id;
-    fileService.deleteFile(id)
-    .then(() => {
+    try {
+        await fileService.deleteFile(id);
         response.sendStatus(200);
-    })
-    .catch(error => {
+    } catch(error) {
         console.log('error occurs: ', error);
         response.sendStatus(500).end(error);
-    });
+    }
 });
 
 app.listen(process.env.APP_PORT, () => {
